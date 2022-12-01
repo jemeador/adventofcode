@@ -1,0 +1,23 @@
+#!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
+ROOT_DIR=$SCRIPT_DIR/..
+
+if [ -z $1 ]; then
+  YEAR=$(date -u +"%Y");
+  DAY=$(date -u +"%d");
+  echo "$YEAR/$DAY"
+else
+  if [ -z $2 ]; then
+    YEAR=$(date -u +"%Y");
+    DAY=$1;
+    echo "$YEAR/$DAY"
+  else
+    YEAR=$1
+    DAY=$2;
+    echo "$YEAR/$DAY"
+  fi
+fi
+
+NEW_DIR=$ROOT_DIR/$YEAR/$DAY
+cd $NEW_DIR
+vim main.py

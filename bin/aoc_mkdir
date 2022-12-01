@@ -1,0 +1,8 @@
+#!/bin/bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)
+DAY=$2
+YEAR=$1
+ROOT_DIR=$SCRIPT_DIR/..
+NEW_DIR=$ROOT_DIR/$YEAR/$DAY
+mkdir -p $NEW_DIR
+cp $ROOT_DIR/template/* $NEW_DIR/
