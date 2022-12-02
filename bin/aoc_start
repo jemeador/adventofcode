@@ -25,4 +25,5 @@ cp -n $ROOT_DIR/template/* $NEW_DIR/
 cd $NEW_DIR
 aoc_input
 aoc_sample
+date > .start
 vim main.py

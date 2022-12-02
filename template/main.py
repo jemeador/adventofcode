@@ -27,8 +27,8 @@ if __name__ == "__main__":
     p1 = solve1(lines)
     p2 = solve2(lines)
     if p1 is not None:
-        print(p1)
+        print("Solution 1:", p1)
         pyperclip.copy(p1)
     if p2 is not None:
-        print(p2)
+        print("Solution 2:", p2)
         pyperclip.copy(p2)
