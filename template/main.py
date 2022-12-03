@@ -1,6 +1,15 @@
 #!/usr/bin/env python3
+import sys
+sys.path.append('../..')
+from py_utils.grid import print_grid
+
+from collections import defaultdict
+
 import fileinput
+import itertools
 import pyperclip
+import queue
+import re
 
 def dprint(*args, **kwargs):
     if True:

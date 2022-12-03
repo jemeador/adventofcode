@@ -21,18 +21,8 @@ def solve1(lines):
     s = 0
     for line in lines:
         a, b = line.split(' ')
-        if a == 'A':
-            them = 0
-        if a == 'B':
-            them = 1
-        if a == 'C':
-            them = 2
-        if b == 'X':
-            you = 0
-        if b == 'Y':
-            you = 1
-        if b == 'Z':
-            you = 2
+        them = ord(a) - ord('A')
+        you = ord(b) - ord('X')
         s += score(them, you)
     return s
 
@@ -41,17 +31,12 @@ def solve2(lines):
     s = 0
     for line in lines:
         a, b = line.split(' ')
-        if a == 'A':
-            them = 0
-        if a == 'B':
-            them = 1
-        if a == 'C':
-            them = 2
+        them = ord(a) - ord('A')
         if b == 'X':
             you = (them -1) % 3
-        if b == 'Y':
+        elif b == 'Y':
             you = them
-        if b == 'Z':
+        else:
             you = (them + 1) % 3
         s += score(them, you)
     return s
