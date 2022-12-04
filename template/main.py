@@ -2,6 +2,7 @@
 import sys
 sys.path.append('../..')
 from py_utils.grid import print_grid
+from py_utils.fast_parse import get_ints, get_uints
 
 from collections import defaultdict
 
