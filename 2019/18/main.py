@@ -14,6 +14,8 @@ import queue
 import re
 import os
 import time
+import math
+import heapq
 
 def dprint(*args, **kwargs):
     if False:
@@ -23,14 +25,12 @@ p1 = None
 p2 = None
 
 State = namedtuple('State', 'node keys_remaining')
-Edge = namedtuple('Edge', 'start end')
+
+def key_for_bit(n):
+    return chr(ord('a') + n)
 
 def keys_from_bits(n):
-    keys = []
-    for o in range(0,26):
-        if is_bit_set(n, o):
-            keys.append(chr(o + ord('a')))
-    return keys
+    return [chr(o + ord('a')) for o in range(26) if is_bit_set(n, o)]
 
 def keys_to_bitset(keys):
     bitset = 0
@@ -59,49 +59,37 @@ def playback(g, moves):
         m = moves[i]
         coord = get_unique_pos(g, m)
         mutable_g[coord] = '@'
-        time.sleep(0.01)
+        time.sleep(0.1)
         os.system('clear')
         print_grid(mutable_g)
         mutable_g[coord] = '.'
 
-def BFS(g, edges, start_key, end_key):
-    if start_key == end_key:
+def DFS(edges, start_node, end_node, keys_remaining, visited, memo):
+    if start_node == end_node:
         return 0
-    visited = {}
-    visited[start_key] = 0
-    q = queue.PriorityQueue()
-    q.put((0, start_key))
-    while not q.empty():
-        cost, node = q.get()
-        for edge, added_cost in edges.items():
-            if edge.start != node:
-                continue
-            new_cost = cost + added_cost
-            if edge.end == end_key:
-                return new_cost
-            if edge.end not in visited or new_cost < visited[edge.end]:
-                visited[edge.end] = new_cost
-                q.put((new_cost, edge.end))
-    print(f'Failed to find min dist! {start_key}, {end_key}')
-    assert(False)
-    return None
-
-def build_min_dists(g, edges):
-    dists = {}
-    node_coords = {}
-    for coord, cell in g.items():
-        if is_poi(cell):
-            node_coords[cell] = coord
-    for start_key, start_coord in node_coords.items():
-        for end_key, end_coord in node_coords.items():
-            min_dist = BFS(g, edges, start_key, end_key)
-            assert(min_dist is not None)
-            dists[start_key, end_key] = min_dist
-    return dists
-
-def heuristic(state, min_distances):
-    keys = keys_from_bits(state.keys_remaining)
-    return max([min_distances[state.node, key] for key in keys] + [0])
+    args = (start_node, end_node, keys_remaining)
+    if args in memo:
+        return memo[args]
+    new_visited = visited.copy()
+    new_visited.add(start_node)
+    best = math.inf
+    for dest, cost in edges[start_node].items():
+        if dest in visited:
+            continue
+        # Locked door
+        if dest.isupper() and key_in_bitset(keys_remaining, dest.lower()):
+            continue
+        if dest == end_node:
+            memo[args] = cost
+            return cost
+        # Collecting another key would change the keys_remaining
+        if dest.islower() and key_in_bitset(keys_remaining, dest):
+            continue
+        total_cost = cost + DFS(edges, dest, end_node, keys_remaining, new_visited, memo)
+        if total_cost < best:
+            best = total_cost
+    memo[args] = best
+    return best
 
 def is_poi(cell):
     return cell != '.' and cell != '#'
@@ -124,7 +112,7 @@ def find_edges(g, start_coord):
                     continue
                 visited.add(adj_coord)
                 if is_poi(cell):
-                    ret[Edge(start_node, cell)] = cost
+                    ret[cell] = cost
                 else:
                     new_frontier.append(adj_coord)
         frontier = new_frontier.copy()
@@ -137,51 +125,57 @@ def build_graph(g):
             node_coords[cell] = coord
     edges = {}
     for node, coord in node_coords.items():
-        edges.update(find_edges(g, node_coords[node]))
+        edges[node] = find_edges(g, node_coords[node])
 
     return node_coords.keys(), edges
 
 def collect_keys(g):
     nodes, edges = build_graph(g)
-    min_distances = build_min_dists(g, edges)
     keys = [n for n in nodes if n.islower()]
-    print(keys)
-    print(edges)
-    print(min_distances)
+    dfs_memo = {}
+    dprint('Keys:', sorted(keys))
+    dprint('Edges:', sorted(edges))
 
     visited_states = defaultdict(int)
     start_state = State(node='@', keys_remaining=keys_to_bitset(keys))
 
-    q = queue.PriorityQueue()
-    PqElement = namedtuple('PqElement', 'priority cost state moves')
-    q.put(PqElement(0, 0, start_state, ''))
-
+    q = []
+    PqElement = namedtuple('PqElement', 'cost entry_count state moves')
+    entry_count = 0
+    heapq.heappush(q, PqElement(0, entry_count, start_state, ''))
     iteration = 0
-    while not q.empty():
-        priority, cost, state, moves = q.get()
+    while q:
+        cost, _, state, moves = heapq.heappop(q)
         visited_states[state] = cost
         node, keys_remaining = state
 
         if keys_remaining == 0:
             playback(g, moves)
+            print(f'Explorerd {iteration} states')
             return cost
 
-        if iteration % 1000 == 0:
-            print(f'Priority: {priority}, g={cost}, h={priority-cost}, keys_remaining={bin(keys_remaining)}({len(keys_from_bits(keys_remaining))})')
+        if iteration % 10000 == 0:
+            print(f'g={cost}, keys_remaining={bin(keys_remaining)}({len(keys_from_bits(keys_remaining))})')
 
-        for edge, added_cost in edges.items():
-            if edge.start != node:
+        for i in range(0, 26):
+            if not is_bit_set(keys_remaining, i):
                 continue
-            if edge.end.isupper() and key_in_bitset(keys_remaining, edge.end.lower()):
-                continue
-            new_node = edge.end
-            new_cost = cost + added_cost
-            new_keys_remaining = keys_remaining
-            if edge.end.islower():
-                new_keys_remaining = without_key(keys_remaining, edge.end)
+            new_node = key_for_bit(i)
+            new_keys_remaining = without_key(keys_remaining, new_node)
             new_state = State(node=new_node, keys_remaining=new_keys_remaining)
+            if new_state in visited_states and visited_states[new_state] <= cost:
+                continue
+
+            if (node, new_node, keys_remaining) in dfs_memo:
+                added_cost = dfs_memo[(node, new_node, keys_remaining)]
+            else:
+                added_cost = DFS(edges, node, new_node, keys_remaining, set(), dfs_memo)
+            if added_cost == math.inf:
+                continue
+            new_cost = cost + added_cost
             if new_state not in visited_states or new_cost < visited_states[state]:
-                q.put((new_cost + heuristic(new_state, min_distances), new_cost, new_state, moves + edge.end))
+                entry_count += 1
+                heapq.heappush(q, PqElement(new_cost, entry_count, new_state, moves + new_node))
         iteration += 1
     return -1
 
@@ -209,8 +203,8 @@ if __name__ == "__main__":
         if line[-1] == '\n':
             line = line[:-1]
         lines.append(line)
-    #cProfile.run('p1 = solve1(lines)')
-    p1 = solve1(lines)
+    cProfile.run('p1 = solve1(lines)')
+    #p1 = solve1(lines)
     p2 = solve2(lines)
     if p1 is not None:
         print("Solution 1:", p1)
