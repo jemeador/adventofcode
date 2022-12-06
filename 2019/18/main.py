@@ -189,12 +189,25 @@ def solve1(lines):
     assert(keys_from_bits(_bitset) == ['a', 'b', 'c', 'f'])
     assert(keys_from_bits(5) == ['a', 'c'])
     assert(keys_from_bits(5) == ['a', 'c'])
+
     g = make_ascii_grid(lines)
     print_grid(g, str)
     return collect_keys(g)
 
 def solve2(lines):
-    pass
+    g = make_ascii_grid(lines)
+
+    before = "..."
+             ".@."
+             "..."
+
+    after =  "@#@"
+             "###"
+             "@#@"
+
+    count = find_and_replace_pattern(g, before, after)
+    print_grid(g, str)
+    return collect_keys(g)
 
 if __name__ == "__main__":
     f = fileinput.input()
