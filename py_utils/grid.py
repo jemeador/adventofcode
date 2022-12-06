@@ -1,4 +1,5 @@
 from collections import defaultdict
+from collections import namedtuple
 
 cell_with_spacing = (lambda d: str(d) + ' ')
 
@@ -6,11 +7,13 @@ adj_offsets = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 diag_offsets = [(0, -1), (0, 1), (-1, 0), (1, 0)]
 king_offsets = adj_offsets + diag_offsets
 
+Coord = namedtuple('Coord', 'x y')
+
 def make_ascii_grid(lines):
     grid = defaultdict(str)
     for y in range(len(lines)):
         for x in range(len(lines[0])):
-            grid[x,y] = lines[y][x]
+            grid[Coord(x,y)] = lines[y][x]
     return grid
 
 def get_unique_pos(grid_dict, value):
@@ -32,13 +35,29 @@ def print_grid(grid_dict, painter_func=cell_with_spacing):
         print(''.join(line))
 
 def add_coords(coord1, coord2):
-    return tuple(map(lambda i, j: i + j, coord1, coord2)) 
+    return (coord1[0] + coord2[0], coord1[1] + coord2[1])
 
 def sub_coords(coord1, coord2):
-    return tuple(map(lambda i, j: i - j, coord1, coord2)) 
+    return (coord1[0] - coord2[0], coord1[1] - coord2[1])
 
 def manhatten(coord1, coord2):
-    return sum(tuple(map(lambda i, j: abs(i - j), coord1, coord2)))
+    return abs(coord1[0] - coord2[0]) + abs(coord1[1] - coord2[1])
+
+def get_coords_with_offsets(coord, d_offset):
+    ret = []
+    for offset in d_offset:
+        ret.append(add_coords(coord, offset))
+    return ret
+
+def get_adj_coords(coord):
+    return get_coords_with_offsets(coord, adj_offsets)
+
+def get_diag_coords(grid_dict, coord):
+    return get_coords_with_offsets(coord, diag_offsets)
+
+def get_king_coords(grid_dict, coord):
+    return get_coords_with_offsets(coord, king_offsets)
+
 
 def get_items_with_offsets(grid_dict, coord, d_offset):
     grid = grid_dict.copy()
