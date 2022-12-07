@@ -22,6 +22,18 @@ def get_unique_pos(grid_dict, value):
             return coord
     return None
 
+def get_coords(grid_dict, value):
+    for coord, cell in grid_dict.items():
+        if cell == value:
+            yield coord
+
+def find_and_replace_pattern(grid_dict, before, after):
+    for coord in grid_dict.keys():
+        if all(grid_dict[add_coords(coord, pattern_coord)] == pattern_cell for pattern_coord, pattern_cell in before.items()):
+            for pattern_coord, pattern_cell in before.items():
+                replace_coord = add_coords(coord, pattern_coord)
+                grid_dict[replace_coord] = after[pattern_coord]
+
 def print_grid(grid_dict, painter_func=cell_with_spacing):
     cells = grid_dict.copy()
     x0 = min([c[0] for c in cells])

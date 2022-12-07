@@ -17,9 +17,8 @@ import time
 import math
 import heapq
 
-debug_mode = False
 def dprint(*args, **kwargs):
-    if debug_mode:
+    if True:
         return print(*args, **kwargs)
 
 p1 = None
@@ -57,7 +56,7 @@ def keys_to_bitset(keys):
 #        mutable_g[coord] = '.'
 
 def is_connected(edges, start_node, end_node, memo):
-    return math.isfinite(BFS(edges, start_node, end_node, 0, memo))
+    return math.isfinite(BFS(edges, start_node, end_node, 0, set(), memo))
 
 def BFS(edges, start_node, end_node, keys_remaining, memo):
     if start_node == end_node:
@@ -66,33 +65,26 @@ def BFS(edges, start_node, end_node, keys_remaining, memo):
     if args in memo:
         return memo[args]
     cost = 0
-    visited = set()
-    q = []
-    heapq.heappush(q, (0, start_node))
-    while q:
-        cost, src = heapq.heappop(q)
-        visited.add(src)
-        for dest, added_cost in edges[src].items():
-            if dest in visited:
-                continue
-            matches_unowned_key = dest.isalpha() and keys_remaining & (1 << (ord(dest.lower()) - ord('a')))
-            # Locked door
-            if dest.isupper() and matches_unowned_key:
-                continue
-            new_cost = cost + added_cost
-            if dest == end_node:
-                # Perfectly bi-direction graph, cache both directions
-                memo[(start_node, dest, keys_remaining)] = new_cost
-                memo[(dest, start_node, keys_remaining)] = new_cost
-                return new_cost
-            # A key we aren't looking for and haven't collected. An unowned key
-            # would change the keys_remaining (and the 'Z' dimension of the
-            # graph)
-            if matches_unowned_key:
-                continue
-            # This is a starting node (numeric), an opened door, or collected key
-            heapq.heappush(q, (new_cost, dest))
-    return math.inf
+    visited = set([start_coord])
+    frontier = [start_coord]
+    start_node = g[start_coord]
+    while frontier:
+        cost += 1
+        new_frontier = []
+        for coord in frontier:
+            for adj_coord in get_adj_coords(coord):
+                cell = g[adj_coord]
+                if cell == '#':
+                    continue
+                if adj_coord in visited:
+                    continue
+                visited.add(adj_coord)
+                if is_poi(cell):
+                    ret[cell] = cost
+                else:
+                    new_frontier.append(adj_coord)
+        frontier = new_frontier.copy()
+    return -1
 
 def is_poi(cell):
     return cell != '.' and cell != '#'
@@ -142,10 +134,10 @@ def collect_keys(g):
     start_nodes = ''.join([n for n in nodes if n.isnumeric()])
     keys = [n for n in nodes if n.islower()]
     dfs_memo = {}
-    print('Keys:', sorted(keys))
-    print('Edges:', sorted(edges.items()))
+    dprint('Keys:', sorted(keys))
+    dprint('Edges:', sorted(edges.items()))
 
-    visited_states = defaultdict(lambda: math.inf)
+    visited_states = defaultdict(int)
     start_state = State(nodes=start_nodes, keys_remaining=keys_to_bitset(keys))
 
     q = []
@@ -153,31 +145,18 @@ def collect_keys(g):
     entry_count = 0
     heapq.heappush(q, PqElement(0, entry_count, start_state, ''))
     iteration = 0
-    best = math.inf
     while q:
         cost, _, state, moves = heapq.heappop(q)
-
-        if moves == 'acd':
-            dprint(f'Debug print')
-        debug_mode = (moves != 'acd')
-
-        if cost >= visited_states[state]:
-            dprint(f'state {moves} ({cost}) already visited with cost {visited_states[state]}' )
-            continue
-        if cost >= best:
-            dprint(f'state {moves} cannot beat {best} starting from {cost}')
-            continue
-
         visited_states[state] = cost
         nodes, keys_remaining = state
 
         if keys_remaining == 0:
             #playback(g, moves)
-            print(f'Found solution {cost} with {moves}')
-            best = cost
+            print(f'Explorerd {iteration} states')
+            return cost
 
-        if iteration % 1000 == 0:
-            print(f'g={cost}, nodes={nodes}, moves={moves}')
+        if iteration % 1 == 0:
+            print(f'g={cost}, keys_remaining={bin(keys_remaining)}({len(keys_from_bits(keys_remaining))})')
 
         for i in range(0, 26):
             if not keys_remaining & (1<<i):
@@ -187,34 +166,24 @@ def collect_keys(g):
 
             for from_node in nodes:
                 if not is_connected(edges, from_node, key_to_obtain, dfs_memo):
-                    dprint(f'{from_node} not connected')
                     continue
                 new_nodes = nodes.replace(from_node, key_to_obtain)
                 new_state = State(nodes=new_nodes, keys_remaining=new_keys_remaining)
 
                 if (from_node, key_to_obtain, keys_remaining) in dfs_memo:
                     added_cost = dfs_memo[(from_node, key_to_obtain, keys_remaining)]
-                    dprint(f'cost {from_node} to {key_to_obtain} {added_cost} from memo')
                 else:
-                    added_cost = BFS(edges, from_node, key_to_obtain, keys_remaining, dfs_memo)
-                    dprint(f'cost {from_node} to {key_to_obtain} {added_cost} calculated from BFS')
+                    added_cost = BFS(edges, from_node, key_to_obtain, keys_remaining, set(), dfs_memo)
                 if added_cost == math.inf:
                     continue
                 new_cost = cost + added_cost
-                if new_cost < visited_states[new_state]:
+                if new_state not in visited_states or new_cost < visited_states[state]:
                     entry_count += 1
-                    if new_cost < best:
-                        dprint(f'adding {moves + key_to_obtain} {new_cost}')
-                        heapq.heappush(q, PqElement(new_cost, entry_count, new_state, moves + key_to_obtain))
-                    else:
-                        dprint(f'Not adding child {moves + key_to_obtain}, {visited_states[new_state]} is better than {new_cost}')
+                    heapq.heappush(q, PqElement(new_cost, entry_count, new_state, moves + key_to_obtain))
                     # If this robot found a path, then the others should not be on this grid
                     continue
-                else:
-                    dprint(f'{visited_states[new_state]} is better than {new_cost}')
         iteration += 1
-    print(f'Explored {iteration} states')
-    return best
+    return -1
 
 def solve1(lines):
     g = make_ascii_grid(lines)
@@ -246,9 +215,9 @@ if __name__ == "__main__":
         if line[-1] == '\n':
             line = line[:-1]
         lines.append(line)
-    #p1 = solve1(lines)
+    p1 = solve1(lines)
     #cProfile.run('p1 = solve1(lines)')
-    p2 = solve2(lines)
+    #lp2 = solve2(lines)
     #cProfile.run('p2 = solve2(lines)')
     if p1 is not None:
         print("Solution 1:", p1)
