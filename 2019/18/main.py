@@ -3,6 +3,7 @@ import sys
 sys.path.append('../..')
 from py_utils.grid import *
 from py_utils.fast_parse import get_ints, get_uints
+from py_utils.search import *
 
 from collections import defaultdict, deque
 
@@ -60,6 +61,23 @@ def is_connected(edges, start_node, end_node, memo):
     return math.isfinite(BFS(edges, start_node, end_node, 0, memo))
 
 def BFS(edges, start_node, end_node, keys_remaining, memo):
+    class Graph:
+        def __init__(self, edges):
+            self.edges = edges
+        def edges(self, src):
+            src_cell, keys = src
+            for dest_cell, cost in self.edges[src]:
+                matches_unowned_key = dest_cell.isalpha() and keys & (1 << (ord(dest_cell.lower()) - ord('a')))
+                # Locked door
+                if dest_cell.isupper() and matches_unowned_key:
+                    continue
+                new_keys = keys
+                if dest_cell.islower() and matches_unowned_key:
+                    new_keys = new_keys & ~(1<<(ord(key_to_obtain) - ord('a')))
+                yield (dest_cell, new_keys), cost
+
+    graph = Graph(edges)
+    find_path()
     if start_node == end_node:
         return 0
     args = (start_node, end_node, keys_remaining)
@@ -73,12 +91,6 @@ def BFS(edges, start_node, end_node, keys_remaining, memo):
         cost, src = heapq.heappop(q)
         visited.add(src)
         for dest, added_cost in edges[src].items():
-            if dest in visited:
-                continue
-            matches_unowned_key = dest.isalpha() and keys_remaining & (1 << (ord(dest.lower()) - ord('a')))
-            # Locked door
-            if dest.isupper() and matches_unowned_key:
-                continue
             new_cost = cost + added_cost
             if dest == end_node:
                 # Perfectly bi-direction graph, cache both directions
