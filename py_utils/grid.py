@@ -16,6 +16,15 @@ def make_ascii_grid(lines):
             grid[Coord(x,y)] = lines[y][x]
     return grid
 
+def grid_min_x(grid_dict):
+    return min([c[0] for c in grid_dict])
+def grid_min_y(grid_dict):
+    return min([c[1] for c in grid_dict])
+def grid_max_x(grid_dict):
+    return max([c[0] for c in grid_dict])
+def grid_max_y(grid_dict):
+    return max([c[1] for c in grid_dict])
+
 def get_unique_pos(grid_dict, value):
     for coord, cell in grid_dict.items():
         if cell == value:
@@ -35,11 +44,11 @@ def find_and_replace_pattern(grid_dict, before, after):
                 grid_dict[replace_coord] = after[pattern_coord]
 
 def print_grid(grid_dict, painter_func=cell_with_spacing):
+    x0 = grid_min_x(grid_dict)
+    xn = grid_max_x(grid_dict)
+    y0 = grid_min_y(grid_dict)
+    yn = grid_max_y(grid_dict)
     cells = grid_dict.copy()
-    x0 = min([c[0] for c in cells])
-    xn = max([c[0] for c in cells])
-    y0 = min([c[1] for c in cells])
-    yn = max([c[1] for c in cells])
     for y in range(y0, yn + 1):
         line = []
         for x in range(x0, xn + 1):
@@ -47,37 +56,32 @@ def print_grid(grid_dict, painter_func=cell_with_spacing):
         print(''.join(line))
 
 def add_coords(coord1, coord2):
-    return (coord1[0] + coord2[0], coord1[1] + coord2[1])
+    return Coord(coord1[0] + coord2[0], coord1[1] + coord2[1])
 
 def sub_coords(coord1, coord2):
-    return (coord1[0] - coord2[0], coord1[1] - coord2[1])
+    return Coord(coord1[0] - coord2[0], coord1[1] - coord2[1])
 
 def manhatten(coord1, coord2):
     return abs(coord1[0] - coord2[0]) + abs(coord1[1] - coord2[1])
 
 def get_coords_with_offsets(coord, d_offset):
-    ret = []
     for offset in d_offset:
-        ret.append(add_coords(coord, offset))
-    return ret
+        yield add_coords(coord, offset)
 
 def get_adj_coords(coord):
     return get_coords_with_offsets(coord, adj_offsets)
 
-def get_diag_coords(grid_dict, coord):
+def get_diag_coords(coord):
     return get_coords_with_offsets(coord, diag_offsets)
 
-def get_king_coords(grid_dict, coord):
+def get_king_coords(coord):
     return get_coords_with_offsets(coord, king_offsets)
 
-
 def get_items_with_offsets(grid_dict, coord, d_offset):
-    grid = grid_dict.copy()
-    ret = {}
     for offset in d_offset:
         adj_coord = add_coords(coord, offset)
-        ret[adj_coord] = grid[adj_coord]
-    return ret.items()
+        if adj_coord in grid_dict:
+            yield adj_coord, grid_dict[adj_coord]
 
 def get_adj_items(grid_dict, coord):
     return get_items_with_offsets(grid_dict, coord, adj_offsets)
