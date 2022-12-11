@@ -4,7 +4,7 @@ from collections import namedtuple
 cell_with_spacing = (lambda d: str(d) + ' ')
 
 adj_offsets = [(0, -1), (0, 1), (-1, 0), (1, 0)]
-diag_offsets = [(0, -1), (0, 1), (-1, 0), (1, 0)]
+diag_offsets = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 king_offsets = adj_offsets + diag_offsets
 
 Coord = namedtuple('Coord', 'x y')
