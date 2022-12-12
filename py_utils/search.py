@@ -59,6 +59,8 @@ def find_path(graph, start_node, end_node, calc_heuristic=None):
         state = heappop(q)
         total_cost, path = state
         src = path[-1]
+        if src in visited:
+            continue
         visited.add(src)
         if src == end_node:
             print(f'Explored {len(visited)} states')
@@ -68,7 +70,7 @@ def find_path(graph, start_node, end_node, calc_heuristic=None):
                 continue
             cost = total_cost + edge_cost
             if calc_heuristic:
-                cost += calc_heuristic(dest)
+                cost += calc_heuristic(src, dest)
             state = PathResult(cost, path + [dest])
             heappush(q, state)
     print(f'Failed to find a single path in {len(visited)} states')
