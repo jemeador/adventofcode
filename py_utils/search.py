@@ -46,32 +46,38 @@ def build_graph_from_ascii_grid(grid_dict,
             frontier = new_frontier.copy()
     return graph
 
-PathResult = namedtuple('PathResult', 'cost path')
+PathResult = namedtuple('PathResult', 'score cost_so_far path')
 
 @lru_cache(maxsize=None)
-def find_path(graph, start_node, end_node, calc_heuristic=None):
-    if start_node == end_node:
+def find_path(graph, start_node, end_node=None, is_end_node=None, calc_heuristic=None, maximize=False):
+    if start_node == end_node or (is_end_node is not None and is_end_node(start_node)):
         return 0
     visited = set()
     q = []
-    heappush(q, PathResult(0, [start_node]))
+    h = 0
+    if calc_heuristic:
+        h += calc_heuristic(start_node, end_node)
+    start_h = h
+    heappush(q, PathResult(h, 0, [start_node]))
     while q:
         state = heappop(q)
-        total_cost, path = state
+        score, cost_so_far, path = state
         src = path[-1]
         if src in visited:
             continue
         visited.add(src)
-        if src == end_node:
+        if src == end_node or (is_end_node is not None and is_end_node(src)):
             print(f'Explored {len(visited)} states')
             return state
         for dest, edge_cost in graph.edges_from(src):
             if dest in visited:
                 continue
-            cost = total_cost + edge_cost
+            h = 0
             if calc_heuristic:
-                cost += calc_heuristic(src, dest)
-            state = PathResult(cost, path + [dest])
+                h += calc_heuristic(dest, end_node)
+            new_cost = cost_so_far + edge_cost
+            priority = start_h - (new_cost+h) if maximize else new_cost + h
+            state = PathResult(priority, new_cost, path + [dest])
             heappush(q, state)
     print(f'Failed to find a single path in {len(visited)} states')
-    return PathResult(math.inf, [])
+    return PathResult(math.inf, 0, [])

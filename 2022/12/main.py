@@ -42,11 +42,11 @@ class MountainGraph:
 def solve1(lines):
     grid = make_ascii_grid(lines)
     print_grid(grid)
-    cost, path = find_path(MountainGraph(grid), get_unique_pos(grid, 'S'), get_unique_pos(grid, 'E'))
-    debug = grid.copy()
-    for coord in path:
-        debug[coord] = '.'
-    print_grid(debug, str)
+    cost, _, path = find_path(MountainGraph(grid), get_unique_pos(grid, 'S'), get_unique_pos(grid, 'E'))
+    #debug = grid.copy()
+    #for coord in path:
+        #debug[coord] = '.'
+    #print_grid(debug, str)
     return cost
 
 def solve2(lines):
@@ -54,13 +54,13 @@ def solve2(lines):
     print_grid(grid)
     best = math.inf
     for coord in get_coords(grid, 'a'):
-        cost, path = find_path(MountainGraph(grid), coord, get_unique_pos(grid, 'E'))
+        cost, _, path = find_path(MountainGraph(grid), coord, get_unique_pos(grid, 'E'))
         if cost < best:
             best = cost
-            debug = grid.copy()
-            for coord in path:
-                debug[coord] = '.'
-            print_grid(debug, str)
+            #debug = grid.copy()
+            #for coord in path:
+                #debug[coord] = '.'
+            #print_grid(debug, str)
     return best
 
 if __name__ == "__main__":
