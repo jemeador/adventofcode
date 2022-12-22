@@ -12,7 +12,7 @@ Coord = namedtuple('Coord', 'x y')
 def make_ascii_grid(lines):
     grid = defaultdict(str)
     for y in range(len(lines)):
-        for x in range(len(lines[0])):
+        for x in range(len(lines[y])):
             grid[Coord(x,y)] = lines[y][x]
     return grid
 
@@ -60,6 +60,9 @@ def add_coords(coord1, coord2):
 
 def sub_coords(coord1, coord2):
     return Coord(coord1[0] - coord2[0], coord1[1] - coord2[1])
+
+def mult_coord(coord1, multi):
+    return Coord(coord1[0] * multi, coord1[1] * multi)
 
 def manhatten(coord1, coord2):
     return abs(coord1[0] - coord2[0]) + abs(coord1[1] - coord2[1])
