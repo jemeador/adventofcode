@@ -66,6 +66,8 @@ def find_path(graph, start_node, end_node=None, is_end_node=None, calc_heuristic
         if src in visited:
             continue
         visited.add(src)
+        if len(visited) % 1000 == 0:
+            print(f'Explored {len(visited)} states')
         if src == end_node or (is_end_node is not None and is_end_node(src)):
             print(f'Explored {len(visited)} states')
             return state
