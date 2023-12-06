@@ -1,5 +1,5 @@
 #!/bin/bash
-SESSION=53616c7465645f5f8ad89a1da478d4b6f4fd4590d7ed1fb52a3c6d2257bc8921a3dccf927ee677cbb02b1af6a6becc44e2a7b3ffa4f5e09595c9591ad5a1f016
+SESSION=${AOC_SESSION_ID}
 p=$(pwd)
 DAY=$(basename "$p")
 YEAR=$(basename $(dirname "$p"))
