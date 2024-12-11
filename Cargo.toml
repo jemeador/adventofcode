@@ -1,0 +1,57 @@
+[package]
+name = "advent_of_code"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rand = "0.8.5"
+regex = "1.8.1"
+array2d = "0.3.2"
+intbits = "0.2.0"
+num-bigint = "0.4.6"
+
+[[bin]]
+name = "aoc_2024_1"
+path = "2024/1/main.rs"
+
+[[bin]]
+name = "aoc_2024_2"
+path = "2024/2/main.rs"
+
+[[bin]]
+name = "aoc_2024_3"
+path = "2024/3/main.rs"
+
+[[bin]]
+name = "aoc_2024_4"
+path = "2024/4/main.rs"
+
+[[bin]]
+name = "aoc_2024_5"
+path = "2024/5/main.rs"
+
+[[bin]]
+name = "aoc_2024_6"
+path = "2024/6/main.rs"
+
+[[bin]]
+name = "aoc_2024_7"
+path = "2024/7/main.rs"
+
+[[bin]]
+name = "aoc_2024_8"
+path = "2024/8/main.rs"
+
+[[bin]]
+name = "aoc_2024_9"
+path = "2024/9/main.rs"
+
+[[bin]]
+name = "aoc_2024_10"
+path = "2024/10/main.rs"
+
+
+[[bin]]
+name = "aoc_2024_11"
+path = "2024/11/main.rs"
+
