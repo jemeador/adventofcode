@@ -4,7 +4,9 @@ use std::io;
 use std::collections::HashSet;
 use std::io::BufRead;
 
-const PLUS_DIRS: [(isize, isize); 4] = [
+type Pos = (isize, isize);
+
+const PLUS_DIRS: [Pos; 4] = [
     (0,-1),
     (1,0),
     (0,1),
@@ -37,15 +39,15 @@ fn height(grid: &Vec<Vec<char>>) -> isize {
     return grid.len() as isize;
 }
 
-fn char_at(grid: &Vec<Vec<char>>, index: (isize, isize)) -> char {
+fn char_at(grid: &Vec<Vec<char>>, index: Pos) -> char {
     return grid[index.1 as usize][index.0 as usize];
 }
 
-fn set_char_at(grid: & mut Vec<Vec<char>>, index: (isize, isize), ch: char) {
+fn set_char_at(grid: & mut Vec<Vec<char>>, index: Pos, ch: char) {
     return grid[index.1 as usize][index.0 as usize] = ch;
 }
 
-fn find_char(grid: &Vec<Vec<char>>, search_ch: char) -> Result<(isize, isize), &'static str> {
+fn find_char(grid: &Vec<Vec<char>>, search_ch: char) -> Result<Pos, &'static str> {
     for x in 0..width(grid) {
         for y in 0..height(grid) {
             if char_at(grid, (x,y)) == search_ch {
@@ -66,7 +68,7 @@ fn print(grid: &Vec<Vec<char>>) {
     println!();
 }
 
-fn in_bounds(grid: &Vec<Vec<char>>, pos: (isize, isize)) -> bool {
+fn in_bounds(grid: &Vec<Vec<char>>, pos: Pos) -> bool {
     let x = pos.0;
     let y = pos.1;
     if x < 0 || x >= width(grid) || y < 0 || y >= height(grid) {
@@ -75,7 +77,7 @@ fn in_bounds(grid: &Vec<Vec<char>>, pos: (isize, isize)) -> bool {
     return true;
 }
 
-fn add_pos(pos1: (isize, isize), pos2: (isize, isize)) -> (isize, isize) {
+fn add_pos(pos1: Pos, pos2: Pos) -> Pos {
     let x1 = pos1.0;
     let y1 = pos1.1;
     let x2 = pos2.0;

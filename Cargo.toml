@@ -9,6 +9,8 @@ regex = "1.8.1"
 array2d = "0.3.2"
 intbits = "0.2.0"
 num-bigint = "0.4.6"
+line_intersection = "0.4.0"
+geo = "0.4.0"
 
 [[bin]]
 name = "aoc_2024_1"
@@ -54,4 +56,14 @@ path = "2024/10/main.rs"
 [[bin]]
 name = "aoc_2024_11"
 path = "2024/11/main.rs"
+
+
+[[bin]]
+name = "aoc_2024_12"
+path = "2024/12/main.rs"
+
+
+[[bin]]
+name = "aoc_2024_13"
+path = "2024/13/main.rs"
 
