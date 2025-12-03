@@ -21,14 +21,9 @@ fi
 NEW_DIR=$ROOT_DIR/$YEAR/$DAY
 echo "Creating dir $NEW_DIR"
 mkdir -p $NEW_DIR
-cp -n $ROOT_DIR/rust_utils/template/* $NEW_DIR/
+cp $ROOT_DIR/py_utils/template.py $NEW_DIR/main.py
 cd $NEW_DIR
 aoc_input
 aoc_sample
 date > .start
-echo """
-[[bin]]
-name = \"aoc_${YEAR}_${DAY}\"
-path = \"${YEAR}/${DAY}/main.rs\"
-""" >> $ROOT_DIR/Cargo.toml
-vim main.rs
+vim main.py
