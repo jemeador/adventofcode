@@ -30,6 +30,20 @@ def solve1(lines):
             turn = -1 * int(line[1:])
         if line.startswith('R'):
             turn = 1 * int(line[1:])
+
+        r = (r + turn) % 100
+        if r == 0:
+            sol += 1
+    return sol
+
+def solve2(lines):
+    r = 50
+    sol = 0
+    for line in lines:
+        if line.startswith('L'):
+            turn = -1 * int(line[1:])
+        if line.startswith('R'):
+            turn = 1 * int(line[1:])
         while turn <= -100:
             turn += 100
             sol += 1
@@ -39,20 +53,13 @@ def solve1(lines):
 
         if r + turn >= 100:
             sol += 1
-            print(line)
         elif r > 0 and r + turn < 0:
             sol += 1
-            print(line)
         if r + turn == 0:
             sol += 1
-            print(line)
 
         r = (r + turn) % 100
-        print(r)
     return sol
-
-def solve2(lines):
-    pass
 
 if __name__ == "__main__":
     f = fileinput.input()

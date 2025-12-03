@@ -30,6 +30,24 @@ def solve1(lines):
         hi = int(hi)
         for i in range(lo, hi+1):
             as_str = str(i)
+            if len(as_str) % 2 != 0:
+                continue
+            len_segment = len(as_str) // 2
+            segment = as_str[:len_segment]
+            next_segment = as_str[len_segment:]
+            if segment == next_segment:
+                total += i
+    return total
+
+def solve2(lines):
+    total = 0
+    line = ''.join(lines)
+    for r in line.split(','):
+        lo,hi = r.split('-')
+        lo = int(lo)
+        hi = int(hi)
+        for i in range(lo, hi+1):
+            as_str = str(i)
             for len_segment in range(1, 1 + len(as_str) // 2):
                 if len(as_str) % len_segment != 0:
                     continue
@@ -45,12 +63,8 @@ def solve1(lines):
                     k += len_segment
                 if not valid:
                     total += i
-                    # print(i)
                     break
     return total
-
-def solve2(lines):
-    pass
 
 if __name__ == "__main__":
     f = fileinput.input()
@@ -64,4 +78,4 @@ if __name__ == "__main__":
     if p1 is not None:
         print("Solution 1:", p1)
     if p2 is not None:
-        + print("Solution 2:", p2)
+        print("Solution 2:", p2)
