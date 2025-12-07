@@ -113,8 +113,9 @@ def solve2(lines):
         normal_ranges = sorted(normal_ranges)
     prev_num = 0
     dprint(normal_ranges)
-    for normal_range in normal_ranges:
+    for index, normal_range in enumerate(normal_ranges):
         r += normal_range[1] - normal_range[0] + 1
+        print(f"  Normal range {index}: {normal_range[0]}-{normal_range[1]}");
         if normal_range[0] <= prev_num:
             dprint("Overlap!", normal_range[0])
         if normal_range[1] <= prev_num:
