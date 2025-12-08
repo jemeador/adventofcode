@@ -25,19 +25,50 @@ p2 = None
 def dist(j1, j2):
     return (j1[0] - j2[0]) ** 2 + (j1[1] - j2[1]) ** 2 + (j1[2] - j2[2]) ** 2
 
+
+def get_zone(j):
+    # Heuristic for making buckets (cheated a bit by knowing the final
+    # distance) Make buckets where junctions boxes in adjacent buckets are
+    # never more than 15000 units apart
+    M = 15000
+
+    return (j[0] // M, j[1] // M, j[2] // M)
+
+def adj_zones(zone):
+    ret = []
+    for x in range(zone[0] - 1, zone[0] + 2):
+        for y in range(zone[1] - 1, zone[1] + 2):
+            for z in range(zone[2] - 1, zone[2] + 2):
+                ret.append((x, y , z))
+    return ret
+
 def solve(lines):
     junctions = []
-    for line in lines:
-        j = [int(x) for x in line.split(',')]
+    buckets = defaultdict(list)
+    for i, line in enumerate(lines):
+        j = tuple([int(x) for x in line.split(',')])
         junctions.append(j)
+        buckets[get_zone(j)].append(i)
 
     distances = {}
+    dprint("Bucket count: ", len(buckets))
 
-
-    for a, j1 in enumerate(junctions):
-        for b in range(a+1, len(junctions)):
-            j2 = junctions[b]
-            distances[(a,b)] = dist(j1, j2)
+    # This part is entirely optional, the program runs fast enough at ~1s, but
+    # this makes it about 10x faster
+    optimize = True
+    if optimize:
+        for a, j1 in enumerate(junctions):
+            for adj_zone in adj_zones(get_zone(j1)):
+                bucket = buckets[adj_zone]
+                for b in bucket:
+                    if a < b:
+                        j2 = junctions[b]
+                        distances[(a,b)] = dist(j1, j2)
+    else:
+        for a, j1 in enumerate(junctions):
+            for b in range(a+1, len(junctions)):
+                j2 = junctions[b]
+                distances[(a,b)] = dist(j1, j2)
 
     distances_sorted = sorted(distances.items(), key=lambda x: x[1])
 
@@ -57,6 +88,10 @@ def solve(lines):
     last_connection = (0, 0)
 
     while len(circuits[grouping[0]]) < len(junctions):
+        if n >= len(distances_sorted):
+            print("Exhausted list of distances at ", n-1,
+                  math.sqrt(distances_sorted[n-1][1]))
+            exit(1)
         item = distances_sorted[n]
         pair = item[0]
         (a, b) = pair
@@ -71,13 +106,13 @@ def solve(lines):
         n += 1
         if n == connections_to_make:
             solution1 = 1
+            sorted_circuits = sorted(circuits.items(),
+                                     key=lambda x: len(x[1]), reverse=True)
             for i in range(3):
-                sorted_circuits = sorted(circuits.items(),
-                                         key=lambda x: len(x[1]), reverse=True)
                 solution1 *= len(sorted_circuits[i][1])
 
 
-    print("Max distance: ", distances[last_connection])
+    dprint("Max distance: ", math.sqrt(distances[last_connection]))
 
     solution2 = junctions[last_connection[0]][0] * junctions[last_connection[1]][0]
     return solution1, solution2
