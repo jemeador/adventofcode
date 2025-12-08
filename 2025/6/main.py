@@ -44,6 +44,7 @@ def solve1(lines):
             problem = 1
             for item in cols[i]:
                 problem *= int(item)
+        print(cols[i], ops[i], problem)
         r += problem
     return r
 
